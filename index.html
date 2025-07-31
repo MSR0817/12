@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>自然保护区监管效能三维分析</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        .dashboard {
+            display: flex;
+            width: 1200px;
+            margin: 20px auto;
+            font-family: "Helvetica Neue", Arial, sans-serif;
+            gap: 20px;
+        }
+        .panel {
+            flex: 1;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px 0 rgba(0,0,0,0.08);
+            padding: 20px;
+            background: white;
+            transition: transform 0.3s ease;
+        }
+        .panel:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 24px 0 rgba(0,0,0,0.12);
+        }
+        .panel-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #edf2f7;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+        #chart1, #chart2, #chart3 {
+            height: 380px;
+        }
+        .legend {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+            gap: 20px;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            font-size: 12px;
+            color: #4a5568;
+        }
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            margin-right: 8px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <!-- 监测能力对比 -->
+    <div class="panel">
+        <div class="panel-title">监测能力对比 (2018 vs 2021)</div>
+        <div id="chart1"></div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background:#8b5cf6;"></div>
+                <span>传统监管</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background:#10b981;"></div>
+                <span>无人机监管</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 空间分布分析 -->
+    <div class="panel">
+        <div class="panel-title">违规活动空间分布 (2000年监测)</div>
+        <div id="chart2"></div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background:#8b5cf6;"></div>
+                <span>核心区</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background:#a78bfa;"></div>
+                <span>缓冲区</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background:#c4b5fd;"></div>
+                <span>实验区</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 规划对比分析 -->
+    <div class="panel">
+        <div class="panel-title">各级保护区问题分布</div>
+        <div id="chart3"></div>
+        <div class="legend">
+            <div class="legend-item">
+                <div class="legend-color" style="background:#10b981;"></div>
+                <span>违规面积</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 监测能力对比 - 雷达图
+    var chart1 = echarts.init(document.getElementById('chart1'));
+    var option1 = {
+        tooltip: {
+            trigger: 'item',
+            formatter: function(params) {
+                var traditionalData = ['1公顷', '平均15起', '3-7天', '65%'];
+                var droneData = ['0.04公顷', '平均92起', '4小时内', '92%'];
+                var improvements = ['提升2500%', '提升513%', '缩短95%', '提高27个百分点'];
+
+                return `
+                    <div style="font-weight:600;margin-bottom:5px">${params.name}</div>
+                    <div style="display:flex;justify-content:space-between">
+                        <span style="color:#8b5cf6">传统监管</span>
+                        <span>${traditionalData[params.dataIndex]}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between">
+                        <span style="color:#10b981">无人机监管</span>
+                        <span>${droneData[params.dataIndex]}</span>
+                    </div>
+                    <div style="color:#10b981;margin-top:5px">${improvements[params.dataIndex]}</div>
+                `;
+            }
+        },
+        radar: {
+            indicator: [
+                { name: '最小识别面积', max: 100 },
+                { name: '违法发现量', max: 100 },
+                { name: '案件核实时间', max: 100 },
+                { name: '执法准确率', max: 100 }
+            ],
+            radius: '70%',
+            axisName: {
+                color: '#4a5568'
+            },
+            splitArea: {
+                areaStyle: {
+                    color: ['rgba(248, 250, 252, 0.8)']
+                }
+            }
+        },
+        series: [{
+            type: 'radar',
+            data: [
+                {
+                    value: [20, 15, 30, 65],
+                    name: '传统监管',
+                    areaStyle: { color: 'rgba(139, 92, 246, 0.2)' },
+                    itemStyle: { color: '#8b5cf6' },
+                    lineStyle: { width: 2 }
+                },
+                {
+                    value: [95, 92, 95, 92],
+                    name: '无人机监管',
+                    areaStyle: { color: 'rgba(16, 185, 129, 0.2)' },
+                    itemStyle: { color: '#10b981' },
+                    lineStyle: { width: 2 }
+                }
+            ]
+        }],
+        color: ['#8b5cf6', '#10b981']
+    };
+
+    // 空间分布分析 - 饼图
+    var chart2 = echarts.init(document.getElementById('chart2'));
+    var option2 = {
+        tooltip: {
+            trigger: 'item',
+            formatter: function(params) {
+                var cases = {
+                    '核心区': '其他人工设施 (93.13%)',
+                    '缓冲区': '道路建设',
+                    '实验区': '农业扩张'
+                };
+                var locations = [
+                    '23°15′40″N, 114°26′6″E',
+                    '23°18′12″N, 114°23′45″E',
+                    '23°12′33″N, 114°29′18″E'
+                ];
+
+                return `
+                    <div style="font-weight:600;margin-bottom:5px">${params.name}</div>
+                    <div>占比: <span style="font-weight:600">${params.percent}%</span></div>
+                    <div>主要违规: ${cases[params.name]}</div>
+                    <div>典型案例: ${locations[params.dataIndex]}</div>
+                `;
+            }
+        },
+        series: [{
+            type: 'pie',
+            radius: ['45%', '70%'],
+            avoidLabelOverlap: false,
+            itemStyle: {
+                borderRadius: 6,
+                borderColor: '#fff',
+                borderWidth: 2
+            },
+            label: {
+                show: true,
+                formatter: '{b}: {d}%',
+                color: '#4a5568'
+            },
+            emphasis: {
+                label: {
+                    show: true,
+                    fontWeight: 'bold'
+                },
+                itemStyle: {
+                    shadowBlur: 10,
+                    shadowOffsetX: 0,
+                    shadowColor: 'rgba(0, 0, 0, 0.2)'
+                }
+            },
+            data: [
+                { value: 40.89, name: '核心区', itemStyle: { color: '#8b5cf6' } },
+                { value: 0.44, name: '缓冲区', itemStyle: { color: '#a78bfa' } },
+                { value: 58.67, name: '实验区', itemStyle: { color: '#c4b5fd' } }
+            ]
+        }],
+        color: ['#8b5cf6', '#a78bfa', '#c4b5fd']
+    };
+
+    // 规划对比分析 - 柱状图
+    var chart3 = echarts.init(document.getElementById('chart3'));
+    var option3 = {
+        tooltip: {
+            trigger: 'axis',
+            axisPointer: { type: 'shadow' },
+            formatter: function(params) {
+                var problems = {
+                    '国家级': '零星农业活动',
+                    '省级': '旅游设施扩建',
+                    '市级': '工矿开发',
+                    '县级': '多种类型混合'
+                };
+                var areas = {
+                    '国家级': '核心区边缘',
+                    '省级': '实验区农用地带',
+                    '市级': '缓冲区外围',
+                    '县级': '整个保护区范围'
+                };
+
+                return `
+                    <div style="font-weight:600;margin-bottom:5px">${params[0].name}保护区</div>
+                    <div>违规面积: <span style="font-weight:600">${params[0].value}公顷</span></div>
+                    <div>主要问题: ${problems[params[0].name]}</div>
+                    <div>重点区域: ${areas[params[0].name]}</div>
+                `;
+            }
+        },
+        grid: {
+            left: '3%',
+            right: '4%',
+            bottom: '3%',
+            containLabel: true
+        },
+        xAxis: {
+            type: 'category',
+            data: ['国家级', '省级', '市级', '县级'],
+            axisLine: {
+                lineStyle: {
+                    color: '#e2e8f0'
+                }
+            },
+            axisLabel: {
+                color: '#4a5568'
+            }
+        },
+        yAxis: {
+            type: 'value',
+            name: '违规面积(公顷)',
+            nameTextStyle: {
+                color: '#4a5568',
+                padding: [0, 0, 0, 40]
+            },
+            axisLine: {
+                show: true,
+                lineStyle: {
+                    color: '#e2e8f0'
+                }
+            },
+            axisLabel: {
+                color: '#4a5568'
+            },
+            splitLine: {
+                lineStyle: {
+                    color: '#edf2f7'
+                }
+            }
+        },
+        series: [{
+            type: 'bar',
+            barWidth: '50%',
+            data: [0.73, 62.95, 43.99, 62.02],
+            itemStyle: {
+                color: function(params) {
+                    // 渐变色
+                    return new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                        { offset: 0, color: '#10b981' },
+                        { offset: 1, color: '#059669' }
+                    ]);
+                },
+                borderRadius: [4, 4, 0, 0]
+            },
+            label: {
+                show: true,
+                position: 'top',
+                formatter: '{c}公顷',
+                color: '#10b981'
+            }
+        }]
+    };
+
+    chart1.setOption(option1);
+    chart2.setOption(option2);
+    chart3.setOption(option3);
+
+    // 响应式调整
+    window.addEventListener('resize', function() {
+        chart1.resize();
+        chart2.resize();
+        chart3.resize();
+    });
+</script>
+</body>
+</html>
